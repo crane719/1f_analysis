@@ -1,0 +1,87 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.js"></script>
+
+<title>1/f visualization</title>
+</head>
+
+<body>
+<section class="hero is-dark">
+<div class="hero-body">
+  <div class="container">
+    <h1 class="title">
+      1/f visualization
+    </h1>
+  </div>
+</div>
+</section>
+
+<div class="hero-body">
+  <div class="container has-text-centerd" id=vis>
+    <div id="overlay" v-show="show_pop">
+      <div id="content" v-show="show_pop">
+        <select v-model="current_pic_arg">
+          <option v-for="arg in pic_dir.std.length">{{arg}}:{{pic_dir.std[arg]}}</option>
+        </select>
+        <img :src=current_pic_dir>
+        <button @click="close_pop">決定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+<script>
+vm=new Vue({
+  el: "#vis",
+  data: {
+    show_pop: true,
+    current_pic_arg: 0,
+    current_pic_dir: "",
+    pic_dir: [],
+  },
+  created: function(){
+    var path="http://localhost:5000/get_pic";
+    axios.get(path)
+      .then(response=>{
+      this.pic_dir=response.data;
+      }
+    )
+  },
+  watch:{
+    current_pic_arg: function(){
+      this.current_pic_dir=this.pic_dir.dirs[String(this.current_pic_arg).split(":")[0]];
+    },
+  },
+  methods:{
+    close_pop: function(){
+      this.show_pop=false;
+    },
+  },
+  })
+</script>
+<style>
+#overlay{
+  z-index:1;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+#content{
+  z-index:2;
+  width:70%;
+  padding: 15em;
+  background:#fff;
+}
+</style>
+</html>
