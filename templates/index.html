@@ -32,7 +32,7 @@
         <button @click="close_pop">決定</button>
       </div>
     </div>
-    <svg id="graph" :width="width" :height="height"></svg>
+    <svg id="graph" :width="width" :height="height" font-size="5ex"></svg>
   </div>
 </div>
 
@@ -70,6 +70,7 @@ vm=new Vue({
     },
     draw: function(){
       var svg = d3.select('#graph');
+      var tooltip = d3.select("body").append("div").attr("class", "tooltip");
       d3.csv("result.csv", function(data) {
         let categorys = Array.from(new Set(data.map((d) => d.category)));
         let xCoords = categorys.map((d, i) => 150 + i * 150);
@@ -85,9 +86,14 @@ vm=new Vue({
           .append("circle")
           .attr("class", "circ")
           .attr("stroke", "black")
-          .attr("r", (d) => 1)
+          .attr("r", (d) => 5)
           .attr("cx", (d) => xScale(d.category))
-          .attr("cy", (d) => yScale(d.std));
+          .attr("cy", (d) => yScale(d.std))
+          .on("mouseover", function(d) {
+             tooltip
+             .style("visibility", "visible")
+             .html(d.name);
+           })
         svg.append("g")
           .attr("transform", "translate(0,30)")
           .call(xaxis);
@@ -95,6 +101,7 @@ vm=new Vue({
           .classed("axisY-label", true)
           .classed("axisY_label-zentai", true)
           .attr("transform", "translate(0,0)")
+          .text("std")
           .call(
             d3.axisRight()
             .scale(yScale)
@@ -124,6 +131,35 @@ vm=new Vue({
   width:70%;
   padding: 15em;
   background:#fff;
+}
+
+.cirStyle {
+  r: 8;
+  fill: #BF5E5E;
+  stroke-width: 3px;
+  stroke: #73412F;
+  opacity: 0.7;
+}
+
+.cirStyle:hover {
+  r: 12;
+  fill: #F2B705;
+  stroke: #F29F05;
+}
+
+.tooltip {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 4px;
+  font: 10px sans-serif;
+  color: #fff;
+  background: #333;
+  -webkit-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  -moz-box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  visibility: hidden;
 }
 </style>
 </html>
