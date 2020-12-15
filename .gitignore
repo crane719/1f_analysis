@@ -1,1 +1,5 @@
 dataset/*
+venv/*
+analysis_result/*
+.DS_Store
+__pycache__/*
