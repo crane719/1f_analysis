@@ -3,3 +3,4 @@ venv/*
 analysis_result/*
 .DS_Store
 __pycache__/*
+result.json

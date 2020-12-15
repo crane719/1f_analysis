@@ -1,15 +1,19 @@
 import copy
 import matplotlib.pyplot as plt
 import tqdm
+import numpy as np
+import json
 
 import utils
 import signal_process as sp
+import visualize as vis
 
 # result directoryの作成
 result_dir="analysis_result"
 required_dirs = [
         result_dir,
         result_dir+"/psd",
+        result_dir+"/fitting",
         ]
 utils.make_dir(required_dirs)
 
@@ -19,19 +23,24 @@ dataset_dir="dataset"
 all_dirs=utils.current_all_dir(dataset_dir)
 all_dirs=sorted(all_dirs)
 dir_dict={}
+name_dict={}
 for dir_ in all_dirs:
     dir_list=dir_.split("/")
     if len(dir_list)==2:
         dir_dict[dir_list[1]]=[]
+        name_dict[dir_list[1]]=[]
     else:
         dir_dict[dir_list[1]].append(dir_)
-#prtmpint(dir_dict)
+        name=dir_.split("/")[-1].split(".")[0]
+        name_dict[dir_list[1]].append(name)
 
 # スペクトログラムに変換
 data_dict=copy.deepcopy(dir_dict) # dictionaryの初期化が面倒なのでcopy
 data_dict={k:[] for k in data_dict.keys()}
+print("PSD Calculation...")
+min_th=20
+max_th=20000
 for k, v in dir_dict.items():
-    print("PSD Calculation...")
     create_dir=[
             result_dir+"/psd/"+k
             ]
@@ -41,27 +50,56 @@ for k, v in dir_dict.items():
         rate, data=sp.read_signal(directory)
         f, psd=sp.psd(data, fs=rate)
         # 低周波の削除
-        f=f[1:]
-        psd=psd[1:]
+        psd=psd[min_th<f]
+        f=f[min_th<f]
         # 高周波の削除
-        psd=psd[f<rate//2]
-        f=f[f<rate//2]
+        psd=psd[f<max_th]
+        f=f[f<max_th]
         # save
         data_dict[k].append([f, psd])
 
         # psdの可視化
         name=directory.split("/")[-1].split(".")[0]
         outputdir=result_dir+"/psd/"+k+"/"
-        # log-log
-        plt.figure()
-        ax=plt.gca()
-        ax.set_yscale("log")
-        ax.set_xscale("log")
-        plt.plot(f, psd)
-        plt.savefig(outputdir+"log_"+name+".png")
-        plt.close()
-        # 通常
-        plt.figure()
-        plt.plot(f, psd)
-        plt.savefig(outputdir+name+".png")
-        plt.close()
+        data={"PSD": [f, psd]}
+        vis.times_plot(data, outputdir+name+".png", x_label="frequency", y_label="Power", log=False)
+        vis.times_plot(data, outputdir+"log_"+name+".png", x_label="frequency", y_label="Power", log=True)
+
+# fitting
+print("Fitting...")
+fitting_dict=copy.deepcopy(dir_dict)
+fitting_dict={k: [] for k in fitting_dict.keys()}
+for k, v in data_dict.items():
+    create_dir=[
+            result_dir+"/fitting/"+k
+            ]
+    utils.make_dir(create_dir)
+    for i in tqdm.tqdm(range(len(v))):
+        # fitting
+        x,y=v[i]
+        param, cov=sp.fitting(x,y)
+        fitting_y=[sp.function(tmp, param[0]) for tmp in x]
+        data={
+            "data":[x, y],
+            "fitting data":[x, fitting_y]
+            }
+        directory=dir_dict[k][i]
+        name=directory.split("/")[-1].split(".")[0]
+        outputdir=result_dir+"/fitting/"+k+"/"
+        # 可視化
+        # non log
+        vis.times_plot(data, outputdir+"log_"+name+".png", x_label="frequency", y_label="Power", log=True)
+        vis.times_plot(data, outputdir+name+".png", x_label="frequency", y_label="Power", log=False)
+
+        # save
+        std=np.sqrt(np.diag(cov))
+        fitting_dict[k].append([param[0], std[0]])
+
+# json形式に変換する前に整形
+result_dict={
+        k: {name: {"param":result[0], "std":result[1]} for name, result in zip(dir_dict[k], fitting_dict[k])}
+        for k in fitting_dict.keys()}
+
+# json形式で結果の出力
+f=open("result.json", "w")
+jsondata=json.dump(result_dict, f)

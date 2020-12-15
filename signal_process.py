@@ -4,6 +4,7 @@ from pydub import AudioSegment
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from scipy.optimize import curve_fit
 
 def read_signal(directory):
     # 末尾の拡張子によって
@@ -23,3 +24,13 @@ def read_signal(directory):
 
 def psd(data, fs):
     return signal.welch(data, fs=fs)
+
+def function(x, a):
+    y=a/x
+    return y
+
+def fitting(x, y):
+    param, cov=curve_fit(function, x, y)
+    return param, cov
+
+
