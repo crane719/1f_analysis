@@ -3,6 +3,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://unpkg.com/d3-moveto@0.0.3/build/d3-moveto.min.js"></script>
+<script src="https://unpkg.com/jeezy@1.12.13/lib/jeezy.min.js"></script>
 
 <title>1/f visualization</title>
 </head>
@@ -11,9 +14,9 @@
 <section class="hero is-dark">
 <div class="hero-body">
   <div class="container">
-    <h1 class="title">
+    <h2 class="title">
       1/f visualization
-    </h1>
+    </h2>
   </div>
 </div>
 </section>
@@ -29,6 +32,7 @@
         <button @click="close_pop">決定</button>
       </div>
     </div>
+    <svg id="graph" :width="width" :height="height"></svg>
   </div>
 </div>
 
@@ -39,9 +43,12 @@ vm=new Vue({
   el: "#vis",
   data: {
     show_pop: true,
+    result: [],
     current_pic_arg: 0,
     current_pic_dir: "",
     pic_dir: [],
+    width:200,
+    height:500,
   },
   created: function(){
     var path="http://localhost:5000/get_pic";
@@ -59,6 +66,41 @@ vm=new Vue({
   methods:{
     close_pop: function(){
       this.show_pop=false;
+      this.draw();
+    },
+    draw: function(){
+      var svg = d3.select('#graph');
+      d3.csv("result.csv", function(data) {
+        let categorys = Array.from(new Set(data.map((d) => d.category)));
+        let xCoords = categorys.map((d, i) => 150 + i * 150);
+        let xScale = d3.scaleOrdinal().domain(categorys).range(xCoords);
+        let yScale = d3
+          .scaleLinear()
+          .domain([0, 200000])
+          .range([50, 800]);
+        let xaxis=d3.axisBottom().scale(xScale).tickValues(categorys);
+        svg.selectAll(".circ")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("class", "circ")
+          .attr("stroke", "black")
+          .attr("r", (d) => 1)
+          .attr("cx", (d) => xScale(d.category))
+          .attr("cy", (d) => yScale(d.std));
+        svg.append("g")
+          .attr("transform", "translate(0,30)")
+          .call(xaxis);
+        svg.append("g")
+          .classed("axisY-label", true)
+          .classed("axisY_label-zentai", true)
+          .attr("transform", "translate(0,0)")
+          .call(
+            d3.axisRight()
+            .scale(yScale)
+            .ticks(3)
+          );
+      });
     },
   },
   })

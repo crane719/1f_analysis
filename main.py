@@ -3,14 +3,16 @@ import matplotlib.pyplot as plt
 import tqdm
 import numpy as np
 import json
+import pandas as pd
 
 import utils
 import signal_process as sp
 import visualize as vis
 
 # result directoryの作成
-result_dir="analysis_result"
+result_dir="static/analysis_result"
 required_dirs = [
+        "static",
         result_dir,
         result_dir+"/psd",
         result_dir+"/fitting",
@@ -103,3 +105,13 @@ result_dict={
 # json形式で結果の出力
 f=open("result.json", "w")
 jsondata=json.dump(result_dict, f)
+
+# csvで出力
+tmp=[]
+for k, v in result_dict.items():
+    for directory, data in v.items():
+        name=directory.split("/")[-1].split(".")[0]
+        tmp.append([name, k, directory, data["std"]])
+columns=["name", "category", "directory", "std"]
+df=pd.DataFrame(tmp, columns=columns)
+df.to_csv("result.csv")

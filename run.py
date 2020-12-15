@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 import json
 from collections import OrderedDict
 
@@ -22,9 +22,8 @@ for _, v in result_dict.items():
         if len(music_dir)==3:
             music_dir[2]="log_"+music_dir[2].split(".")[0]+".png"
         tmps["static/analysis_result/fitting/"+music_dir[1]+"/"+music_dir[2]]=v1["std"]
-"""
-pic_dict=OrderedDict((k, v) for k, v in sorted(tmps.items(), key=lambda item: item[1]))
-"""
+
+
 pic_dict={"dirs":[], "std":[]}
 for k, v in sorted(tmps.items(), key=lambda item: item[1]):
     pic_dict["dirs"].append(k)
@@ -37,6 +36,14 @@ def index():
 @app.route("/get_pic")
 def get_pic_dir():
     return jsonify(pic_dict)
+
+@app.route("/get_std")
+def get_std():
+    return jsonify(result_dict)
+
+@app.route("/result.csv")
+def get_csv():
+    return send_file("./result.csv")
 
 if __name__=="__main__":
     app.run(debug=True)
