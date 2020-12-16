@@ -47,8 +47,9 @@ vm=new Vue({
     current_pic_arg: 0,
     current_pic_dir: "",
     pic_dir: [],
-    width:200,
+    width:1200,
     height:500,
+    th_std: 0,
   },
   created: function(){
     var path="http://localhost:5000/get_pic";
@@ -61,6 +62,7 @@ vm=new Vue({
   watch:{
     current_pic_arg: function(){
       this.current_pic_dir=this.pic_dir.dirs[String(this.current_pic_arg).split(":")[0]];
+      this.th_std=this.pic_dir.std[String(this.current_pic_arg).split(":")[0]];
     },
   },
   methods:{
@@ -71,6 +73,8 @@ vm=new Vue({
     draw: function(){
       var svg = d3.select('#graph');
       var tooltip = d3.select("body").append("div").attr("class", "tooltip");
+      var stdy=this.th_std;
+      console.log(stdy);
       d3.csv("result.csv", function(data) {
         let categorys = Array.from(new Set(data.map((d) => d.category)));
         let xCoords = categorys.map((d, i) => 150 + i * 150);
@@ -80,6 +84,7 @@ vm=new Vue({
           .domain([0, 200000])
           .range([50, 800]);
         let xaxis=d3.axisBottom().scale(xScale).tickValues(categorys);
+        let color = d3.scaleOrdinal().domain(categorys).range(d3.schemeCategory10);
         svg.selectAll(".circ")
           .data(data)
           .enter()
@@ -89,13 +94,14 @@ vm=new Vue({
           .attr("r", (d) => 5)
           .attr("cx", (d) => xScale(d.category))
           .attr("cy", (d) => yScale(d.std))
+          .attr("fill", (d)=>color(d.category))
           .on("mouseover", function(d) {
              tooltip
              .style("visibility", "visible")
              .html(d.name);
            })
         svg.append("g")
-          .attr("transform", "translate(0,30)")
+          .attr("transform", "translate(0,0)")
           .call(xaxis);
         svg.append("g")
           .classed("axisY-label", true)
@@ -107,11 +113,19 @@ vm=new Vue({
             .scale(yScale)
             .ticks(3)
           );
+        svg.append("line")
+          .attr("x1", 100)
+          .attr("x2", 150*categorys.length+60)
+          .attr("y1", yScale(stdy))
+          .attr("y2", yScale(stdy))
+          .attr("stroke-width", 4)
+          .attr("stroke", "#000000");
       });
     },
   },
   })
 </script>
+
 <style>
 #overlay{
   z-index:1;
