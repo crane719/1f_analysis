@@ -13,7 +13,7 @@ sh install.sh
 
 - static/datasetの作成
     - static/dataset directory内で分析したいデータを以下のように作成
-        - ``static/dataset/分類名/曲名.png[or wav]``
+        - ``static/dataset/分類名/曲名.mp3[or wav]``
 
 - 実行
 
