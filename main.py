@@ -12,7 +12,6 @@ import visualize as vis
 # result directoryの作成
 result_dir="static/analysis_result"
 required_dirs = [
-        "static",
         result_dir,
         result_dir+"/psd",
         result_dir+"/fitting",

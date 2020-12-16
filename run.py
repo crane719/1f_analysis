@@ -19,10 +19,9 @@ tmps={}
 for _, v in result_dict.items():
     for music_dir, v1 in v.items():
         music_dir=music_dir.split("/")
-        if len(music_dir)==3:
-            music_dir[2]="log_"+music_dir[2].split(".")[0]+".png"
-        tmps["static/analysis_result/fitting/"+music_dir[1]+"/"+music_dir[2]]=v1["std"]
-
+        if len(music_dir)==4:
+            music_dir[3]="log_"+music_dir[3].split(".")[0]+".png"
+        tmps["static/analysis_result/fitting/"+music_dir[2]+"/"+music_dir[3]]=v1["std"]
 
 pic_dict={"dirs":[], "std":[]}
 for k, v in sorted(tmps.items(), key=lambda item: item[1]):

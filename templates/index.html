@@ -82,7 +82,7 @@ vm=new Vue({
         let xScale = d3.scaleOrdinal().domain(categorys).range(xCoords);
         let yScale = d3
           .scaleLinear()
-          .domain([0, 200000])
+          .domain([0, 2000000])
           .range([50, 800]);
         let xaxis=d3.axisBottom().scale(xScale).tickValues(categorys);
         let color = d3.scaleOrdinal().domain(categorys).range(d3.schemeCategory10);
