@@ -5,6 +5,7 @@
 ## usage
 
 - 必要なものをinstall
+    - ``install.sh``はbrew入っている前提なため注意
 
 ```
 sh install.sh
@@ -17,6 +18,7 @@ sh install.sh
 - 実行
 
 ```
+source venv/bin/activate
 python main.py
 ```
 
@@ -24,5 +26,6 @@ python main.py
     - ``http://localhost:5000``にアクセス
 
 ```
+source venv/bin/activate
 python run.py
 ```
