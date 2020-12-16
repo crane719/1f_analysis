@@ -10,10 +10,10 @@
 sh install.sh
 ```
 
-- datasetの作成
-    - dataset directory内で分析したいデータを以下のように作成
-        - ``dataset/分類名/曲名.png[or wav]``
-        - ``dataset/分類名/人名/曲名.png[or wav]``
+- static/datasetの作成
+    - static/dataset directory内で分析したいデータを以下のように作成
+        - ``static/dataset/分類名/曲名.png[or wav]``
+        - ``static/dataset/分類名/人名/曲名.png[or wav]``
 
 - 実行
 

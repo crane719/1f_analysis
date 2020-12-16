@@ -21,27 +21,27 @@ utils.make_dir(required_dirs)
 
 # datasetの各データのdirectoryの取得
 # ラベルをkey, 各データのdirectoryのlistをvalueとしたdictionaryで保存
-dataset_dir="dataset"
+dataset_dir="static/dataset"
 all_dirs=utils.current_all_dir(dataset_dir)
 all_dirs=sorted(all_dirs)
 dir_dict={}
 name_dict={}
 for dir_ in all_dirs:
     dir_list=dir_.split("/")
-    if len(dir_list)==2:
-        dir_dict[dir_list[1]]=[]
-        name_dict[dir_list[1]]=[]
+    if len(dir_list)==3:
+        dir_dict[dir_list[2]]=[]
+        name_dict[dir_list[2]]=[]
     else:
-        dir_dict[dir_list[1]].append(dir_)
+        dir_dict[dir_list[2]].append(dir_)
         name=dir_.split("/")[-1].split(".")[0]
-        name_dict[dir_list[1]].append(name)
+        name_dict[dir_list[2]].append(name)
 
 # スペクトログラムに変換
 data_dict=copy.deepcopy(dir_dict) # dictionaryの初期化が面倒なのでcopy
 data_dict={k:[] for k in data_dict.keys()}
 print("PSD Calculation...")
 min_th=20
-max_th=20000
+max_th=8000
 for k, v in dir_dict.items():
     create_dir=[
             result_dir+"/psd/"+k
