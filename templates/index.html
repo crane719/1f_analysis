@@ -21,8 +21,8 @@
 </div>
 </section>
 
-<div class="hero-body">
-  <div class="container has-text-centerd" id=vis>
+<div class="hero-body" id=vis>
+  <div class="container has-text-centerd">
     <div id="overlay" v-show="show_pop">
       <div id="content" v-show="show_pop">
         <h3>choose acceptable fitting...</h3>
@@ -35,6 +35,7 @@
     </div>
     <svg id="graph" :width="width" :height="height" font="13px"></svg>
   </div>
+  <button @click="save">save</button>
 </div>
 
 </body>
@@ -70,6 +71,14 @@ vm=new Vue({
     close_pop: function(){
       this.show_pop=false;
       this.draw();
+    },
+    save: function(){
+      var path="http://localhost:5000/save";
+      var tmp={th_std: this.th_std};
+      axios.get(path, {params: tmp})
+        .then(response=>{
+          console.log("aa");
+        })
     },
     draw: function(){
       var svg = d3.select('#graph');

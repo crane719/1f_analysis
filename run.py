@@ -1,6 +1,9 @@
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request
 import json
 from collections import OrderedDict
+import shutil
+
+import utils
 
 # app, jinjaの設定変更
 app=Flask(__name__)
@@ -43,6 +46,24 @@ def get_std():
 @app.route("/result.csv")
 def get_csv():
     return send_file("./result.csv")
+
+@app.route("/save")
+def save():
+    th_std=float(request.args.get("th_std"))
+    result_dir=["result"]
+    shutil.rmtree("./result")
+    mix_dir="result/mix"
+    utils.make_dir(["result", mix_dir])
+    for k, v in result_dict.items():
+        copy_dir="result/"+k
+        utils.make_dir([copy_dir])
+        for directory, v1 in v.items():
+            if v1["std"]<=th_std:
+                tmp=directory.split("/")[-1]
+                shutil.copyfile(directory, copy_dir+"/"+tmp)
+                shutil.copyfile(directory, mix_dir+"/"+tmp)
+    return
+
 
 if __name__=="__main__":
     app.run(debug=True)
