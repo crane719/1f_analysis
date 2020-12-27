@@ -191,7 +191,7 @@ class TableVis():
         column=[d[ele] for ele in column]
         return column
 
-def times_plot(data_dict, directory, x_label="", y_label="", log=False):
+def times_plot(data_dict, directory, x_label="", y_label="", log=False, save=True):
     """
     dataをdictionaryにして渡す. kがlegendのラベル. vは(x, y)のlist. x,yはそれぞれ時系列
     """
@@ -204,7 +204,10 @@ def times_plot(data_dict, directory, x_label="", y_label="", log=False):
     ax.set_ylabel(y_label)
     for k, (x,y) in data_dict.items():
         plt.plot(x, y, label=k)
-    plt.savefig(directory)
+    if save:
+        plt.savefig(directory)
+    else:
+        plt.show()
     plt.close()
     return
 

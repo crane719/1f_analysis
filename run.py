@@ -23,8 +23,9 @@ for _, v in result_dict.items():
     for music_dir, v1 in v.items():
         music_dir=music_dir.split("/")
         if len(music_dir)==4:
-            music_dir[3]="log_"+music_dir[3].split(".")[0]+".png"
-        tmps["static/analysis_result/fitting/"+music_dir[2]+"/"+music_dir[3]]=v1["std"]
+            #music_dir[3]="log_"+music_dir[3].split(".")[0]+".png"
+            music_dir[3]=music_dir[3].split(".")[0]+".png"
+        tmps["static/analysis_result/fitting/"+music_dir[2]+"/"+music_dir[3]]=v1["param"]
 
 pic_dict={"dirs":[], "std":[]}
 for k, v in sorted(tmps.items(), key=lambda item: item[1]):
@@ -49,7 +50,10 @@ def get_csv():
 
 @app.route("/save")
 def save():
-    th_std=float(request.args.get("th_std"))
+    #th_std=float(request.args.get("th_std"))
+    min_th=float(request.args.get("min_th"))
+    max_th=float(request.args.get("max_th"))
+
     result_dir=["result"]
     shutil.rmtree("./result")
     mix_dir="result/mix"
@@ -58,7 +62,7 @@ def save():
         copy_dir="result/"+k
         utils.make_dir([copy_dir])
         for directory, v1 in v.items():
-            if v1["std"]<=th_std:
+            if v1["param"]<=max_th and min_th<=v1["param"]:
                 tmp=directory.split("/")[-1]
                 shutil.copyfile(directory, copy_dir+"/"+tmp)
                 shutil.copyfile(directory, mix_dir+"/"+tmp)

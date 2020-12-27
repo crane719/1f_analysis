@@ -8,6 +8,7 @@ import pandas as pd
 import utils
 import signal_process as sp
 import visualize as vis
+import self_math as sm
 
 # result directoryの作成
 result_dir="static/analysis_result"
@@ -78,8 +79,10 @@ for k, v in data_dict.items():
     for i in tqdm.tqdm(range(len(v))):
         # fitting
         x,y=v[i]
+        #x=np.log10(x)
+        #y=np.log10(y)
         param, cov=sp.fitting(x,y)
-        fitting_y=[sp.function(tmp, param[0]) for tmp in x]
+        fitting_y=[sp.function(tmp, param[0], param[1]) for tmp in x]
         data={
             "data":[x, y],
             "fitting data":[x, fitting_y]
@@ -93,8 +96,12 @@ for k, v in data_dict.items():
         vis.times_plot(data, outputdir+name+".png", x_label="frequency", y_label="Power", log=False)
 
         # save
-        std=np.sqrt(np.diag(cov))
-        fitting_dict[k].append([param[0], std[0]])
+        # std=np.sqrt(np.diag(cov))
+        std=sm.rmse(y, fitting_y)
+        #std=abs(param[0]-1)
+        #std=param[0]
+        #fitting_dict[k].append([param[0], std[0]])
+        fitting_dict[k].append([param[0], std])
 
 # json形式に変換する前に整形
 result_dict={
@@ -110,7 +117,7 @@ tmp=[]
 for k, v in result_dict.items():
     for directory, data in v.items():
         name=directory.split("/")[-1].split(".")[0]
-        tmp.append([name, k, directory, data["std"]])
-columns=["name", "category", "directory", "std"]
+        tmp.append([name, k, directory, data["param"]])
+columns=["name", "category", "directory", "param"]
 df=pd.DataFrame(tmp, columns=columns)
 df.to_csv("result.csv")

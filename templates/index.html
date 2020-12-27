@@ -25,11 +25,19 @@
   <div class="container has-text-centerd">
     <div id="overlay" v-show="show_pop">
       <div id="content" v-show="show_pop">
-        <h3>choose acceptable fitting...</h3>
+        <h3>choose threshold...</h3>
+    <!--
         <select v-model="current_pic_arg">
           <option v-for="arg in pic_dir.std.length">{{arg}}:{{pic_dir.std[arg]}}</option>
         </select>
         <img :src=current_pic_dir>
+    -->
+        <select v-model="min_th">
+            <option v-for="num1 in min_ths">{{num1}}</option>
+        </select>
+        <select v-model="max_th">
+            <option v-for="num2 in max_ths">{{num2}}</option>
+        </select>
         <button @click="close_pop">決定</button>
       </div>
     </div>
@@ -46,8 +54,12 @@ vm=new Vue({
   data: {
     show_pop: true,
     result: [],
-    current_pic_arg: 0,
-    current_pic_dir: "",
+    //current_pic_arg: 0,
+    //current_pic_dir: "",
+    min_ths: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+    max_ths: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0],
+    min_th: "",
+    max_th: "",
     pic_dir: [],
     width:1200,
     height:500,
@@ -60,6 +72,7 @@ vm=new Vue({
       this.pic_dir=response.data;
       }
     )
+    this.draw();
   },
   watch:{
     current_pic_arg: function(){
@@ -67,6 +80,11 @@ vm=new Vue({
       this.th_std=this.pic_dir.std[String(this.current_pic_arg).split(":")[0]];
     },
   },
+  /*
+  mounted: function(){
+    this.draw();
+  },
+  */
   methods:{
     close_pop: function(){
       this.show_pop=false;
@@ -74,7 +92,7 @@ vm=new Vue({
     },
     save: function(){
       var path="http://localhost:5000/save";
-      var tmp={th_std: this.th_std};
+      var tmp={min_th: this.min_th,max_th: this.max_th};
       axios.get(path, {params: tmp})
         .then(response=>{
           console.log("aa");
@@ -84,17 +102,21 @@ vm=new Vue({
       var svg = d3.select('#graph');
       var tooltip = d3.select("body").append("div").attr("class", "tooltip");
       var stdy=this.th_std;
+      var min_th=this.min_th;
+      var max_th=this.max_th;
       console.log(stdy);
       d3.csv("result.csv", function(data) {
+        // 描画範囲の設定
         let categorys = Array.from(new Set(data.map((d) => d.category)));
         let xCoords = categorys.map((d, i) => 150 + i * 150);
         let xScale = d3.scaleOrdinal().domain(categorys).range(xCoords);
         let yScale = d3
           .scaleLinear()
-          .domain([0, 2000000])
+          .domain([0.0, 3])
           .range([50, 800]);
         let xaxis=d3.axisBottom().scale(xScale).tickValues(categorys);
         let color = d3.scaleOrdinal().domain(categorys).range(d3.schemeCategory10);
+        // 描画
         svg.selectAll(".circ")
           .data(data)
           .enter()
@@ -103,37 +125,57 @@ vm=new Vue({
           .attr("stroke", "black")
           .attr("r", (d) => 5)
           .attr("cx", (d) => xScale(d.category))
-          .attr("cy", (d) => yScale(d.std))
+          .attr("cy", (d) => yScale(d.param))
           .attr("fill", (d)=>color(d.category))
           .on("mouseover", function(d) {
              tooltip
              .style("visibility", "visible")
-             .html(d.std+": "+d.name);
+             .html(d.param+": "+d.name);
           })
           .on("click", function(d){
             //window.open("static/dataset/classic/Ravel-Jeux-deau.mp3");
             window.open(d.directory);
           })
+        // axisの描画
         svg.append("g")
           .attr("transform", "translate(0,0)")
+          .style("font-size", 15)
           .call(xaxis);
         svg.append("g")
           .classed("axisY-label", true)
           .classed("axisY_label-zentai", true)
           .attr("transform", "translate(0,0)")
-          .text("std")
+          .style("font-size", 15)
           .call(
             d3.axisRight()
             .scale(yScale)
             .ticks(3)
           );
+        // thresholdの描画
         svg.append("line")
           .attr("x1", 100)
           .attr("x2", 150*categorys.length+60)
-          .attr("y1", yScale(stdy))
-          .attr("y2", yScale(stdy))
-          .attr("stroke-width", 4)
+          .attr("y1", yScale(min_th))
+          .attr("y2", yScale(min_th))
+          .attr("stroke-width", 1)
           .attr("stroke", "#000000");
+        svg.append("text")
+          .attr("x", 6)
+          .attr("y", yScale(min_th))
+          .style("font-size", 15)
+          .text(min_th);
+        svg.append("line")
+          .attr("x1", 100)
+          .attr("x2", 150*categorys.length+60)
+          .attr("y1", yScale(max_th))
+          .attr("y2", yScale(max_th))
+          .attr("stroke-width", 1)
+          .attr("stroke", "#000000");
+        svg.append("text")
+          .attr("x", 6)
+          .attr("y", yScale(max_th))
+          .text(max_th)
+          .style("font-size", 15);
       });
     },
   },
