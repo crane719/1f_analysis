@@ -48,7 +48,7 @@ def get_csv():
 
 @app.route("/save")
 def save():
-    #th_std=float(request.args.get("th_std"))
+    rmse_th=float(request.args.get("rmse_th"))
     min_th=float(request.args.get("min_th"))
     max_th=float(request.args.get("max_th"))
 
@@ -61,9 +61,10 @@ def save():
         utils.make_dir([copy_dir])
         for directory, v1 in v.items():
             if v1["param"]<=max_th and min_th<=v1["param"]:
-                tmp=directory.split("/")[-1]
-                shutil.copyfile(directory, copy_dir+"/"+tmp)
-                shutil.copyfile(directory, mix_dir+"/"+tmp)
+                if v1["rmse"]<rmse_th:
+                    tmp=directory.split("/")[-1]
+                    shutil.copyfile(directory, copy_dir+"/"+tmp)
+                    shutil.copyfile(directory, mix_dir+"/"+tmp)
     return
 
 

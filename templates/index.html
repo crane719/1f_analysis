@@ -101,7 +101,7 @@ vm=new Vue({
     },
     save: function(){
       var path="http://localhost:5000/save";
-      var tmp={min_th: this.min_th,max_th: this.max_th};
+      var tmp={min_th: this.min_th,max_th: this.max_th, rmse_th: this.th_rmse};
       axios.get(path, {params: tmp})
         .then(response=>{
           console.log("aa");
@@ -118,21 +118,6 @@ vm=new Vue({
       d3.csv("result.csv", function(data) {
         // 描画範囲の設定
         let categorys = Array.from(new Set(data.map((d) => d.category)));
-
-        console.log(data.rmse);
-        var tmp_categorys=data.map(function(value, index, array){
-          if (value.rmse<rmse_th){
-            return value.category;
-          }else{
-            return value.category+"__";
-          }
-        });
-        //console.log(tmp_categorys);
-
-        /*
-        console.log([for (i of data.rmse) i]); //if (data.rmse[i]<rmse_th) data.category[i] else data.category[i]+"__"]);
-        */
-
         let xCoords = categorys.map((d, i) => 150 + i * 150);
         let xScale = d3.scaleOrdinal().domain(categorys).range(xCoords);
         let yScale = d3
