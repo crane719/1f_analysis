@@ -26,8 +26,8 @@ def psd(data, fs):
     return signal.welch(data, fs=fs, nperseg=1024)
 
 def function(x, a, b):
-    y=b/(x**a)
-    #y=-1*a*x+b
+    #y=b/(x**a)
+    y=-1*a*x+b
     return y
 
 def fitting(x, y):

@@ -79,8 +79,9 @@ for k, v in data_dict.items():
     for i in tqdm.tqdm(range(len(v))):
         # fitting
         x,y=v[i]
-        #x=np.log10(x)
-        #y=np.log10(y)
+        x=np.log10(x)
+        y=np.log10(y)
+        y=y/max(y)
         param, cov=sp.fitting(x,y)
         fitting_y=[sp.function(tmp, param[0], param[1]) for tmp in x]
         data={
@@ -97,15 +98,15 @@ for k, v in data_dict.items():
 
         # save
         # std=np.sqrt(np.diag(cov))
-        std=sm.rmse(y, fitting_y)
+        rmse=sm.rmse(y, fitting_y)
         #std=abs(param[0]-1)
         #std=param[0]
         #fitting_dict[k].append([param[0], std[0]])
-        fitting_dict[k].append([param[0], std])
+        fitting_dict[k].append([param[0], rmse])
 
 # json形式に変換する前に整形
 result_dict={
-        k: {name: {"param":result[0], "std":result[1]} for name, result in zip(dir_dict[k], fitting_dict[k])}
+        k: {name: {"param":result[0], "rmse":result[1]} for name, result in zip(dir_dict[k], fitting_dict[k])}
         for k in fitting_dict.keys()}
 
 # json形式で結果の出力
@@ -117,7 +118,7 @@ tmp=[]
 for k, v in result_dict.items():
     for directory, data in v.items():
         name=directory.split("/")[-1].split(".")[0]
-        tmp.append([name, k, directory, data["param"]])
-columns=["name", "category", "directory", "param"]
+        tmp.append([name, k, directory, data["param"], data["rmse"]])
+columns=["name", "category", "directory", "param", "rmse"]
 df=pd.DataFrame(tmp, columns=columns)
 df.to_csv("result.csv")
