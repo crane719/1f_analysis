@@ -25,12 +25,14 @@ for _, v in result_dict.items():
         if len(music_dir)==4:
             #music_dir[3]="log_"+music_dir[3].split(".")[0]+".png"
             music_dir[3]=music_dir[3].split(".")[0]+".png"
-        tmps["static/analysis_result/fitting/"+music_dir[2]+"/"+music_dir[3]]=v1["param"]
+        tmps["static/analysis_result/fitting/"+music_dir[2]+"/"+music_dir[3]]=\
+                [v1["rmse"], v1["param"]]
 
-pic_dict={"dirs":[], "std":[]}
+pic_dict={"dirs":[], "rmse":[], "param":[]}
 for k, v in sorted(tmps.items(), key=lambda item: item[1]):
     pic_dict["dirs"].append(k)
-    pic_dict["std"].append(v)
+    pic_dict["rmse"].append(v[0])
+    pic_dict["param"].append(v[1])
 
 @app.route("/")
 def index():
@@ -39,10 +41,6 @@ def index():
 @app.route("/get_pic")
 def get_pic_dir():
     return jsonify(pic_dict)
-
-@app.route("/get_std")
-def get_std():
-    return jsonify(result_dict)
 
 @app.route("/result.csv")
 def get_csv():
